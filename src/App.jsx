@@ -35,6 +35,21 @@ function App() {
       setIsLoading(false);
     }
   };
+
+  const AudioPlayer = ({ phonetics }) => {
+    if (!phonetics || phonetics.length === 0) return null;
+
+    // Find the first phonetic entry that has an audio URL
+    const audioSource = phonetics.find((p) => p.audio)?.audio;
+
+    if (!audioSource) return null;
+
+    return (
+      <audio controls src={audioSource} className="w-full mt-4 rounded-md">
+        Your browser does not support the audio element.
+      </audio>
+    );
+  };
   return (
     // Main container with Tailwind CSS classes for styling
     <div className="min-h-screen bg-gray-100 font-sans">
@@ -95,6 +110,8 @@ function App() {
                 </div>
               </div>
 
+              {/* Audio Player */}
+              <AudioPlayer phonetics={definition.phonetics} />
 
               {/* Meanings and Definitions */}
               {definition.meanings.map((meaning, index) => (
