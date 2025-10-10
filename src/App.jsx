@@ -2,15 +2,57 @@ import { useState } from "react";
 import "./App.css";
 import axios from "axios";
 
+const staticWordList = [
+  "hello",
+  "hell",
+  "help",
+  "happen",
+  "happy",
+  "house",
+  "dictionary",
+  "define",
+  "definition",
+  "data",
+  "frontend",
+  "function",
+  "form",
+  "fetch",
+  "future",
+];
+
 function App() {
   const [word, setWord] = useState("");
   const [definition, setDefinition] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+
+  const handleWordChange = (e) => {
+    const newWord = e.target.value.toLowerCase();
+    setWord(newWord);
+
+    // Logic to filter the static list for suggestions
+    if (newWord.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const filteredSuggestions = staticWordList
+      .filter((w) => w.startsWith(newWord))
+      .slice(0, 5); // Limit to top 5
+
+    setSuggestions(filteredSuggestions);
+  };
+
+  const handleSuggestionClick = (suggestedWord) => {
+    setWord(suggestedWord);
+    setSuggestions([]);
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
     // Basic validation to ensure the user entered a word
+    setSuggestions([]);
     if (!word) {
       setError("Please enter a word.");
       setDefinition(null);
@@ -65,28 +107,47 @@ function App() {
         </header>
         {/* Search Form Section */}
         <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
-          <form onSubmit={handleSearch}>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                value={word}
-                onChange={(e) => setWord(e.target.value)} // Update 'word' state on input change
-                placeholder="Enter a word..."
-                className="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-              <button
-                type="submit"
-                disabled={isLoading} // Disable button while loading
-                className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition disabled:bg-blue-300"
-              >
-                {isLoading ? "Searching..." : "Search"}
-              </button>
-            </div>
-          </form>
+          {/* Use a relative positioning container for the search box and suggestions */}
+          <div className="relative">
+            <form onSubmit={handleSearch}>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={word}
+                  onChange={handleWordChange} // 👈 Use the new handler
+                  placeholder="Enter a word..."
+                  className="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition disabled:bg-blue-300"
+                >
+                  {isLoading ? "Searching..." : "Search"}
+                </button>
+              </div>
+            </form>
+
+            {/* 3. Suggestions Dropdown */}
+            {suggestions.length > 0 && (
+              <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                {suggestions.map((s, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(s)} // 👈 Handle click
+                    type="button" // Important to prevent form submission
+                    className="w-full text-left p-3 hover:bg-blue-50 text-gray-800 border-b border-gray-100 last:border-b-0 transition duration-150 ease-in-out"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>{" "}
+          {/* End of relative container */}
         </div>
-        {/* Results Section */}
+        {/* ... (rest of the component remains the same) */}
         <div className="max-w-2xl mx-auto mt-6">
-          {/* Display Error Message if 'error' state is not empty */}
           {error && (
             <div
               className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-md"
@@ -97,7 +158,6 @@ function App() {
             </div>
           )}
 
-          {/* Display Definition if 'definition' state is not null */}
           {definition && (
             <div className="bg-white p-6 rounded-xl shadow-md animate-fade-in">
               {/* Word and Phonetic Text */}
