@@ -9,7 +9,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     // Basic validation to ensure the user entered a word
     if (!word) {
       setError("Please enter a word.");
@@ -27,7 +27,7 @@ function App() {
         `http://localhost:5000/api/define/${word}`
       );
       setDefinition(response.data[0]);
-      console.log(response.data[0])
+      console.log(response.data[0]);
     } catch (err) {
       setError(err.response?.data?.message || "An unexpected error occurred.");
       setDefinition(null);
@@ -49,7 +49,7 @@ function App() {
           </p>
         </header>
         {/* Search Form Section */}
-        <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md">
+        <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
           <form onSubmit={handleSearch}>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -68,6 +68,82 @@ function App() {
               </button>
             </div>
           </form>
+        </div>
+        {/* Results Section */}
+        <div className="max-w-2xl mx-auto mt-6">
+          {/* Display Error Message if 'error' state is not empty */}
+          {error && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-md"
+              role="alert"
+            >
+              <strong className="font-bold">Oops! </strong>
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
+          {/* Display Definition if 'definition' state is not null */}
+          {definition && (
+            <div className="bg-white p-6 rounded-xl shadow-md animate-fade-in">
+              {/* Word and Phonetic Text */}
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 capitalize">
+                    {definition.word}
+                  </h2>
+                  <p className="text-blue-500 text-lg">{definition.phonetic}</p>
+                </div>
+              </div>
+
+
+              {/* Meanings and Definitions */}
+              {definition.meanings.map((meaning, index) => (
+                <div key={index} className="mt-6 border-t pt-4">
+                  <h3 className="text-xl font-semibold text-gray-700 italic">
+                    {meaning.partOfSpeech}
+                  </h3>
+                  {meaning.definitions.map((def, defIndex) => (
+                    <div key={defIndex} className="mt-3 pl-4">
+                      <p className="text-gray-800">{def.definition}</p>
+                      {def.example && (
+                        <p className="text-gray-500 italic mt-1">
+                          e.g., "{def.example}"
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {/* Synonyms */}
+                  {meaning.synonyms && meaning.synonyms.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-600">Synonyms:</h4>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {meaning.synonyms.map((synonym, synIndex) => (
+                          <span
+                            key={synIndex}
+                            className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm"
+                          >
+                            {synonym}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Source URL */}
+              <div className="mt-6 border-t pt-4 text-sm text-gray-500">
+                Source:{" "}
+                <a
+                  href={definition.sourceUrls[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  {definition.sourceUrls[0]}
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
