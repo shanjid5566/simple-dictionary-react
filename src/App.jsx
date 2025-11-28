@@ -20,12 +20,38 @@ const staticWordList = [
   "future",
 ];
 
+// A small static mapping of some English words to Bangla meanings.
+const banglaDictionary = {
+  hello: "হ্যালো",
+  hell: "নরক",
+  help: "সহায়তা",
+  happen: "ঘটা",
+  happy: "সুখী",
+  house: "বাড়ি",
+  dictionary: "শব্দকোষ",
+  define: "সংজ্ঞা",
+  definition: "সংজ্ঞা",
+  data: "তথ্য",
+  frontend: "ফ্রন্টএন্ড",
+  function: "ফাংশন",
+  form: "ফরম",
+  fetch: "আনা/ফেচ",
+  future: "ভবিষ্যত",
+};
+
 function App() {
   const [word, setWord] = useState("");
   const [definition, setDefinition] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+
+  // Compute Bangla meaning (if available) from the static mapping.
+  // Use the current `word` input (trimmed + lowercased) first to avoid
+  // mismatches from the API (extra spaces, capitalization), then fall
+  // back to `definition.word` if `word` is empty.
+  const lookupKey = word?.trim()?.toLowerCase() || definition?.word?.toLowerCase();
+  const banglaMeaning = lookupKey ? banglaDictionary[lookupKey] : null;
 
   const handleWordChange = (e) => {
     const newWord = e.target.value.toLowerCase();
@@ -66,7 +92,7 @@ function App() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/define/${word}`
+        `https://dictionary-app-react-server.vercel.app/api/define/${word}`
       );
       setDefinition(response.data[0]);
       console.log(response.data[0]);
@@ -114,7 +140,7 @@ function App() {
                 <input
                   type="text"
                   value={word}
-                  onChange={handleWordChange} // 👈 Use the new handler
+                  onChange={handleWordChange} 
                   placeholder="Enter a word..."
                   className="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
@@ -134,8 +160,8 @@ function App() {
                 {suggestions.map((s, index) => (
                   <button
                     key={index}
-                    onClick={() => handleSuggestionClick(s)} // 👈 Handle click
-                    type="button" // Important to prevent form submission
+                    onClick={() => handleSuggestionClick(s)} 
+                    type="button" 
                     className="w-full text-left p-3 hover:bg-blue-50 text-gray-800 border-b border-gray-100 last:border-b-0 transition duration-150 ease-in-out"
                   >
                     {s}
@@ -172,6 +198,16 @@ function App() {
 
               {/* Audio Player */}
               <AudioPlayer phonetics={definition.phonetics} />
+
+              {/* Bangla Meaning Section */}
+              <div className="mt-4">
+                <h4 className="font-semibold text-gray-600">বাংলা অর্থ:</h4>
+                {banglaMeaning ? (
+                  <p className="text-gray-800 mt-2">{banglaMeaning}</p>
+                ) : (
+                  <p className="text-sm text-gray-500 mt-2">বাংলা অর্থ উপলব্ধ নেই।</p>
+                )}
+              </div>
 
               {/* Meanings and Definitions */}
               {definition.meanings.map((meaning, index) => (
